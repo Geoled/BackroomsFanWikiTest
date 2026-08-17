@@ -42,9 +42,11 @@ body::after{content:'';position:fixed;inset:0;z-index:9990;pointer-events:none;o
 ::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--amber)}
 button{font-family:inherit;cursor:pointer}
-input,textarea,select{font-family:inherit}
+input,textarea,select{font-family:inherit;font-size:16px}
+@media(min-width:768px){input,textarea,select{font-size:.9rem}}
 :focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 
+@keyframes chromaticAberration{0%{text-shadow:-2px 0 rgba(255,0,0,.4),2px 0 rgba(0,0,255,.4)}50%{text-shadow:-1px 0 rgba(255,0,0,.3),1px 0 rgba(0,0,255,.3)}100%{text-shadow:-2px 0 rgba(255,0,0,.4),2px 0 rgba(0,0,255,.4)}}
 @keyframes screenIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes cardIn{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -91,6 +93,7 @@ input,textarea,select{font-family:inherit}
 .icon-btn{border:1px solid var(--line2);background:var(--bg2);color:var(--dim);border-radius:var(--rs);width:38px;height:38px;
   display:flex;align-items:center;justify-content:center;font-size:1rem;transition:transform .2s,border-color .2s,color .2s,box-shadow .2s;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15);will-change:transform}
 .icon-btn:hover{color:var(--amber);border-color:var(--amber);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.icon-btn:hover .dia{animation:chromaticAberration .3s ease-in-out infinite}
 .icon-btn:active{transform:translateY(0)}
 .icon-btn.active{color:var(--amber);border-color:var(--amber);background:color-mix(in srgb,var(--amber) 12%,var(--bg2));box-shadow:0 0 12px var(--amber-glow)}
 .sb-sos{background:linear-gradient(160deg,var(--danger),#c03a32);color:#fff;border-color:var(--danger);font-weight:700;font-size:.62rem;letter-spacing:1.5px;box-shadow:0 2px 8px rgba(224,86,79,.3)}
@@ -131,6 +134,7 @@ input,textarea,select{font-family:inherit}
 .quick-btn{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1rem .9rem;display:flex;
   align-items:center;gap:.85rem;color:var(--text);text-align:left;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s;position:relative;overflow:hidden;animation:cardIn .5s var(--ease) both;will-change:transform}
 .quick-btn:hover{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 0 1px var(--amber-glow)}
+.quick-btn:hover .qt{text-shadow:-1px 0 rgba(255,0,0,.3),1px 0 rgba(0,0,255,.3)}
 .quick-btn:active{transform:translateY(-2px)}
 .quick-btn .qi{font-size:1.5rem;filter:drop-shadow(0 0 8px var(--amber-glow))}
 .quick-btn .qt{font-family:var(--mono);font-size:.72rem;letter-spacing:.6px;font-weight:600}
@@ -139,6 +143,7 @@ input,textarea,select{font-family:inherit}
 @media(max-width:480px){.stat-row3{grid-template-columns:repeat(2,1fr)}}
 .mini-stat{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:.85rem .5rem;text-align:center;animation:cardIn .5s var(--ease) both;cursor:pointer;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s;box-shadow:0 2px 8px rgba(0,0,0,.15);will-change:transform}
 .mini-stat:hover{border-color:var(--amber);transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.25),0 0 0 1px var(--amber-glow)}
+.mini-stat:hover .n{animation:chromaticAberration .4s ease-in-out infinite}
 .mini-stat:active{transform:translateY(-1px)}
 .mini-stat .n{font-family:var(--mono);font-size:1.5rem;font-weight:700;color:var(--amber);text-shadow:0 0 12px var(--amber-glow)}
 .mini-stat .l{font-family:var(--mono);font-size:.54rem;letter-spacing:1.3px;color:var(--faint);margin-top:.2rem;text-transform:uppercase}
@@ -156,6 +161,7 @@ input,textarea,select{font-family:inherit}
   overflow:hidden;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s;animation:cardIn .5s var(--ease) both;animation-delay:calc(var(--i)*35ms);
   display:flex;gap:1rem;align-items:center;will-change:transform}
 .rcard:hover{border-color:var(--amber);transform:translateX(5px);box-shadow:0 8px 28px rgba(0,0,0,.4),0 0 0 1px var(--amber-glow)}
+.rcard:hover .name{text-shadow:-1px 0 rgba(255,0,0,.25),1px 0 rgba(0,0,255,.25)}
 .rcard:active{transform:translateX(5px) scale(.99)}
 .rcard.encrypted{border-color:var(--faint);background:linear-gradient(135deg,var(--bg1),color-mix(in srgb,var(--faint) 15%,var(--bg1)));cursor:not-allowed}
 .rcard.encrypted .thumb-ph{font-size:1.8rem;color:var(--faint);animation:decryptPulse 3s ease-in-out infinite}
@@ -1026,19 +1032,20 @@ function cardHTML(type,obj,i,showType){
   const cs=clsStyle(type,obj.cls);
   const isPinned=state.pinned.some(p=>p.type===type&&sameId(p.id,obj.id));
   const keys=Object.keys(STATS[type]||{}).slice(0,2);
-  const thumb=obj.thumbnail
+  const isEncrypted=obj.status==='encrypted';
+  const thumb=obj.thumbnail&&!isEncrypted
     ?`<img class="thumb" src="${esc(obj.thumbnail)}" loading="lazy" decoding="async" alt="" onerror="this.outerHTML='<div class=thumb-ph>${cs.i}</div>'">`
-    :`<div class="thumb-ph">${cs.i}</div>`;
-  return `<div class="rcard" style="--i:${Math.min(i,12)}" data-type="${type}" data-id="${esc(obj.id)}">
+    :`<div class="thumb-ph">${isEncrypted?'🔒':cs.i}</div>`;
+  return `<div class="rcard${isEncrypted?' encrypted':''}" style="--i:${Math.min(i,12)}" data-type="${type}" data-id="${esc(obj.id)}">
     ${isPinned?'<span class="pin">◉</span>':''}${thumb}
     <div class="body">
-      <div class="top"><span class="id">#${esc(obj.id)}</span><span class="name">${esc(objName(obj))}</span>
+      <div class="top"><span class="id">#${esc(obj.id)}</span><span class="name">${isEncrypted?'0x4F 0x9A 0x2C...':esc(objName(obj))}</span>
         ${showType?`<span class="type-tag">${TYPE_SHORT[type]}</span>`:''}
-        <span class="cls-badge cls-${clsNum(obj.cls)}">${cs.i}</span></div>
-      <div class="desc">${esc((obj.desc||'').replace(/[#*_>`\[\]]/g,'').slice(0,110))}</div>
-      <div class="bars">${keys.map(k=>{const v=Number(obj.stats[k])||0,max=STAT_MAX[k]||5,on=Math.min(max,Math.round(v));
-        return `<span class="mini-bar">${STATS[type][k].slice(0,4)}<span class="segs">${Array.from({length:max},(_,j)=>`<i class="${j<on?'on':''}"></i>`).join('')}</span></span>`}).join('')}
-        ${(obj.tags||[]).slice(0,2).map(t=>`<span class="tag-pill">#${esc(t)}</span>`).join('')}</div>
+        ${!isEncrypted?`<span class="cls-badge cls-${clsNum(obj.cls)}">${cs.i}</span>`:''}</div>
+      <div class="desc">${isEncrypted?'[ДАННЫЕ ЗАШИФРОВАНЫ. Требуется ключ дешифрования.]':esc((obj.desc||'').replace(/[#*_>`\[\]]/g,'').slice(0,110))}</div>
+      <div class="bars">${!isEncrypted&&keys.map(k=>{const v=Number(obj.stats[k])||0,max=STAT_MAX[k]||5,on=Math.min(max,Math.round(v));
+        return `<span class="mini-bar">${STATS[type][k].slice(0,4)}<span class="segs">${Array.from({length:max},(_,j)=>`<i class="${j<on?'on':''}"></i>`).join('')}</span></span>`}).join('')||''}
+        ${!isEncrypted&&(obj.tags||[]).slice(0,2).map(t=>`<span class="tag-pill">#${esc(t)}</span>`).join('')}</div>
     </div></div>`;
 }
 function renderPinned(){
@@ -1801,7 +1808,30 @@ if(store.get('muted')){state.muted=true; el.muteBtn.textContent='🔇'; el.muteB
 /* ═══════ 21. ГЛОБАЛЬНЫЕ ДЕЛЕГАТЫ ═══════ */
 document.addEventListener('click',e=>{
   const card=e.target.closest('.rcard');
-  if(card){openDossier(card.dataset.type,card.dataset.id);return}
+  if(card){
+    if(card.classList.contains('encrypted')){
+      // Попытка расшифровать если есть ключ
+      const recId=card.dataset.id;
+      const key=state.encryptedKeys[recId];
+      if(key){
+        // Расшифровка: находим запись и меняем статус
+        const type=card.dataset.type;
+        const rec=byId(type,recId);
+        if(rec){
+          rec.status='active';
+          delete state.encryptedKeys[recId];
+          saveData();
+          renderDatabase();
+          toast('✓ Запись расшифрована','ok');
+          SFX.play('unlock');
+        }
+      } else {
+        toast('🔒 Требуется ключ дешифрования','err');
+      }
+      return;
+    }
+    openDossier(card.dataset.type,card.dataset.id);return
+  }
 });
 let pressTimer=null, longPressed=false;
 document.addEventListener('pointerdown',e=>{
@@ -1857,6 +1887,37 @@ document.addEventListener('keydown',e=>{
     toast('Настрой GitHub для синхронизации');
   }
   updateLocChip(); renderOverview();
+
+  // Service Worker регистрация для офлайн-работы
+  if('serviceWorker' in navigator){
+    const swCode=`
+      const CACHE_NAME='kpk-cache-v1';
+      const ASSETS=['./','./mainkpk (1).html'];
+      self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)));self.skipWaiting()});
+      self.addEventListener('activate',e=>{e.waitUntil(self.clients.claim())});
+      self.addEventListener('fetch',e=>{
+        e.respondWith(
+          caches.match(e.request).then(r=>{
+            if(r) return r;
+            return fetch(e.request).then(resp=>{
+              if(!resp||resp.status!==200||resp.type!=='basic') return resp;
+              const clone=resp.clone();
+              caches.open(CACHE_NAME).then(c=>c.put(e.request,clone));
+              return resp;
+            }).catch(()=>{
+              // Офлайн: показываем кэш или заглушку
+              return caches.match(e.request).then(cached=>cached||new Response('<div style=\"padding:2rem;text-align:center;font-family:sans-serif\"><h2>⚠ СЕТЬ НЕДОСТУПНА</h2><p>РАБОТА В АВТОНОМНОМ РЕЖИМЕ НА ОСНОВЕ КЭША</p></div>',{headers:{'Content-Type':'text/html'}}));
+            });
+          })
+        );
+      });
+    `;
+    const blob=new Blob([swCode],{type:'application/javascript'});
+    const swUrl=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swUrl).then(reg=>{
+      console.log('[SW] зарегистрирован',reg.scope);
+    }).catch(err=>console.warn('[SW] ошибка регистрации:',err));
+  }
 })();
 
 })();
