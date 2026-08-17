@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0a0c09">
 <title>◈ СТРАННИК · Полевая база выжившего</title>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -60,6 +61,10 @@ input,textarea,select{font-family:inherit}
 @keyframes ringFill{from{stroke-dashoffset:var(--full)}to{stroke-dashoffset:var(--val)}}
 @keyframes unlock{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 @keyframes fadeOut{to{opacity:0;transform:translateY(10px)}}
+@keyframes pullRefresh{0%{transform:translateY(-60px);opacity:0}50%{transform:translateY(-10px);opacity:1}100%{transform:translateY(0);opacity:1}}
+@keyframes decryptPulse{0%,100%{filter:hue-rotate(0deg)}50%{filter:hue-rotate(30deg)}}
+@keyframes swipeSlide{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+@keyframes swipeSlideOut{from{transform:none;opacity:1}to{transform:translateX(-100%);opacity:0}}
 
 .scanline-fx::before{content:'';position:fixed;left:0;right:0;height:120px;z-index:9989;pointer-events:none;
   background:linear-gradient(180deg,transparent,rgba(242,193,78,.03),transparent);animation:scan 9s linear infinite}
@@ -92,9 +97,15 @@ input,textarea,select{font-family:inherit}
 .sb-sos.armed{animation:glow .8s infinite}
 @media(max-width:560px){.sb-clock,.sb-day{display:none}.sb-loc{max-width:130px}}
 
-.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:calc(var(--status-h) + 16px) 16px calc(var(--nav-h) + 28px)}
-.screen{display:none}
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:calc(var(--status-h) + 16px) 16px calc(var(--nav-h) + 28px);overflow-x:hidden}
+.screen{display:none;position:relative}
 .screen.active{display:block;animation:screenIn .5s var(--ease) both}
+.pull-refresh-indicator{position:absolute;top:-50px;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:center;z-index:10;pointer-events:none;opacity:0;transition:opacity .3s,transform .3s}
+.pull-refresh-indicator.show{opacity:1;animation:pullRefresh .5s var(--ease) both}
+.pull-refresh-indicator .spinner{width:24px;height:24px;border:3px solid var(--line);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite}
+.swipe-hint{position:fixed;bottom:calc(var(--nav-h) + 10px);left:50%;transform:translateX(-50%);background:color-mix(in srgb,var(--bg0) 85%,transparent);backdrop-filter:blur(8px);padding:.4rem .8rem;border-radius:999px;font-family:var(--mono);font-size:.6rem;color:var(--faint);z-index:999;opacity:0;pointer-events:none;transition:opacity .4s;white-space:nowrap}
+.swipe-hint.show{opacity:1}
+@media(max-width:600px){.swipe-hint.show{opacity:1}}
 .sec-title{font-family:var(--mono);font-size:.68rem;letter-spacing:2.8px;color:var(--dim);text-transform:uppercase;
   margin:1.5rem 0 .8rem;display:flex;align-items:center;gap:.7rem}
 .sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
@@ -146,6 +157,11 @@ input,textarea,select{font-family:inherit}
   display:flex;gap:1rem;align-items:center;will-change:transform}
 .rcard:hover{border-color:var(--amber);transform:translateX(5px);box-shadow:0 8px 28px rgba(0,0,0,.4),0 0 0 1px var(--amber-glow)}
 .rcard:active{transform:translateX(5px) scale(.99)}
+.rcard.encrypted{border-color:var(--faint);background:linear-gradient(135deg,var(--bg1),color-mix(in srgb,var(--faint) 15%,var(--bg1)));cursor:not-allowed}
+.rcard.encrypted .thumb-ph{font-size:1.8rem;color:var(--faint);animation:decryptPulse 3s ease-in-out infinite}
+.rcard.encrypted .name,.rcard.encrypted .desc{color:var(--faint);font-family:var(--mono);letter-spacing:1px}
+.rcard.swipe-enter{animation:swipeSlide .35s var(--ease) both}
+.rcard.swipe-exit{animation:swipeSlideOut .35s var(--ease) both}
 .rcard .thumb{width:var(--thumb-size);height:var(--thumb-size);border-radius:var(--rs);object-fit:cover;flex-shrink:0;border:1px solid var(--line2);filter:saturate(.9) contrast(1.05);box-shadow:0 4px 12px rgba(0,0,0,.25)}
 .rcard .thumb-ph{width:var(--thumb-size);height:var(--thumb-size);border-radius:var(--rs);flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:1px solid var(--line2);box-shadow:inset 0 2px 8px rgba(0,0,0,.2)}
 .rcard .body{flex:1;min-width:0}
@@ -497,7 +513,9 @@ const state = {
   screen:'overview', currentLevelId:null, scanMode:'level',
   dbFilter:{q:'',cls:'',tag:''}, dbSort:'id_asc', dbGlobal:false, dbShown:PAGE_SIZE,
   pinned:[], history:[], ach:{}, journal:{notes:[],log:[]}, viewCount:0,
-  mapMode:'graph', muted:false, corrupt:[] // битые файлы
+  mapMode:'graph', muted:false, corrupt:[], // битые файлы
+  encryptedKeys:{}, // ключи для расшифровки: {recordId: key}
+  dbStore:null // localforage instance
 };
 
 /* ═══════ 3. DOM-кэш ═══════ */
@@ -512,8 +530,18 @@ const el = {
   settingsModal:$('#settingsModal'), settingsSheet:$('#settingsSheet'),
   toastWrap:$('#toastWrap'), lightbox:$('#lightbox'), lightboxImg:$('#lightboxImg'),
   alarm:$('#alarm'), alarmBody:$('#alarmBody'), muteBtn:$('#muteBtn'),
-  corruptList:$('#corruptList')
+  corruptList:$('#corruptList'),
+  app:$('.app'), swipeHint:null // будет создан динамически
 };
+
+// Создаём подсказку для свайпов
+function createSwipeHint(){
+  if(el.swipeHint) return;
+  el.swipeHint = document.createElement('div');
+  el.swipeHint.className = 'swipe-hint';
+  el.swipeHint.textContent = '← Свайп для навигации →';
+  document.body.appendChild(el.swipeHint);
+}
 
 /* ═══════ 4. УТИЛИТЫ ═══════ */
 const esc = s => s==null?'':String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -562,8 +590,47 @@ const SFX = {
   }
 };
 
-/* ═══════ 6. STORAGE ═══════ */
+/* ═══════ 6. STORAGE (IndexedDB + localStorage fallback) ═══════ */
+// Используем localforage для больших данных (изображения, база), localStorage для настроек
 const store = {
+  _db:null,
+  async init(){
+    if(this._db) return this._db;
+    try{
+      this._db = localforage.createInstance({
+        name: 'strannik_db',
+        description: 'База данных СТРАННИК',
+        storeName: 'data'
+      });
+      await this._db.ready();
+      state.dbStore = this._db;
+      console.log('[Storage] IndexedDB готов');
+    }catch(e){
+      console.warn('[Storage] IndexedDB недоступен, используем localStorage', e);
+      this._db = null;
+    }
+    return this._db;
+  },
+  // Для больших данных (изображения, записи базы)
+  async getBig(k,d=null){
+    await this.init();
+    if(!this._db) return this.get(k,d);
+    try{
+      const v = await this._db.getItem(k);
+      return v===null?d:v;
+    }catch(e){ return this.get(k,d) }
+  },
+  async setBig(k,v){
+    await this.init();
+    if(!this._db) { this.set(k,v); return; }
+    try{ await this._db.setItem(k,v) }catch(e){ this.set(k,v) }
+  },
+  async delBig(k){
+    await this.init();
+    if(!this._db) { this.del(k); return; }
+    try{ await this._db.removeItem(k) }catch(e){ this.del(k) }
+  },
+  // Для мелких настроек (localStorage)
   get(k,d=null){ try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d} },
   set(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} },
   raw(k){ return localStorage.getItem(k) },
@@ -806,6 +873,77 @@ function typeTerm(){
 }
 
 /* ═══════ 12. ОБЗОР ═══════ */
+// Свайпы между экранами и Pull-to-Refresh
+let touchStartX=0, touchStartY=0, touchEndX=0, touchEndY=0, pullStartY=0, isPulling=false, pullEl=null;
+const SWIPE_THRESHOLD=50, PULL_THRESHOLD=80;
+
+function handleTouchStart(e){
+  touchStartX=e.touches[0].clientX;
+  touchStartY=e.touches[0].clientY;
+  if(window.scrollY===0 && (state.screen==='overview' || state.screen==='database')){
+    isPulling=true;
+    pullStartY=touchStartY;
+    pullEl=document.querySelector('.pull-refresh-indicator');
+    if(pullEl) pullEl.classList.add('show');
+  }
+}
+function handleTouchMove(e){
+  touchEndX=e.touches[0].clientX;
+  touchEndY=e.touches[0].clientY;
+  if(isPulling && pullEl){
+    const dy=touchEndY-pullStartY;
+    if(dy>0){
+      e.preventDefault();
+      const progress=Math.min(dy/PULL_THRESHOLD,1);
+      pullEl.style.transform=`translateY(${dy}px)`;
+      pullEl.style.opacity=progress;
+    }
+  }
+}
+function handleTouchEnd(){
+  const dx=touchEndX-touchStartX;
+  const dy=touchEndY-touchStartY;
+  
+  // Pull-to-Refresh
+  if(isPulling && pullEl){
+    const pullDist=touchEndY-pullStartY;
+    if(pullDist>PULL_THRESHOLD){
+      SFX.play('click');
+      $('#syncBtn').click();
+      toast('Синхронизация...', 'info');
+    }
+    pullEl.style.transform='';
+    pullEl.style.opacity='';
+    pullEl.classList.remove('show');
+    isPulling=false;
+    pullEl=null;
+    return;
+  }
+  
+  // Swipe navigation (только если не было вертикального скролла)
+  if(Math.abs(dx)>Math.abs(dy) && Math.abs(dx)>SWIPE_THRESHOLD){
+    const screens=['overview','database','map','scan','journal'];
+    const idx=screens.indexOf(state.screen);
+    if(dx>0 && idx>0){ // swipe right -> prev screen
+      go(screens[idx-1]);
+      showSwipeHint(false);
+    }else if(dx<0 && idx<screens.length-1){ // swipe left -> next screen
+      go(screens[idx+1]);
+      showSwipeHint(false);
+    }
+  }
+}
+
+function showSwipeHint(show){
+  createSwipeHint();
+  if(el.swipeHint){
+    el.swipeHint.classList.toggle('show',show);
+    if(show){
+      setTimeout(()=>showSwipeHint(false),4000);
+    }
+  }
+}
+
 function go(name){
   state.screen=name; SFX.play('click');
   Object.entries(el.screens).forEach(([k,s])=>s.classList.toggle('active',k===name));
@@ -815,6 +953,15 @@ function go(name){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 el.nav.forEach(b=>b.addEventListener('click',()=>go(b.dataset.nav)));
+
+// Добавляем обработчики свайпов и pull-to-refresh
+if('ontouchstart' in window){
+  document.addEventListener('touchstart',handleTouchStart,{passive:true});
+  document.addEventListener('touchmove',handleTouchMove,{passive:false});
+  document.addEventListener('touchend',handleTouchEnd,{passive:true});
+  // Показываем подсказку после первой секунды
+  setTimeout(()=>showSwipeHint(true),1000);
+}
 
 function levelRisk(lvl){
   if(!lvl||!lvl.stats) return 50;
