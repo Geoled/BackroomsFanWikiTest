@@ -274,6 +274,12 @@ input,textarea,select{font-family:inherit;font-size:16px}
 .smart-chip .chip-remove{width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bg3);color:var(--dim);cursor:pointer;font-size:.7rem;transition:.2s}
 .smart-chip .chip-remove:hover{background:var(--danger);color:#fff}
 .smart-chip .chip-icon{font-size:.75rem}
+.chip-drag{cursor:grab;font-size:.7rem;color:var(--faint);padding:0 .2rem;display:flex;align-items:center;transition:.2s}
+.chip-drag:hover{color:var(--amber)}
+.dragging{opacity:.5;border:1px dashed var(--amber)!important}
+.drag-over{border:1px dashed var(--amber)!important;background:color-mix(in srgb,var(--amber) 8%,var(--bg2))!important}
+.danger-pulse{animation:dangerPulse 2s ease-in-out infinite;border:1px solid color-mix(in srgb,var(--danger) 60%,var(--line2))!important}
+@keyframes dangerPulse{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 6px rgba(220,38,38,0)}}
 .smart-input-hidden{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
 .smart-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200;max-height:320px;display:none;flex-direction:column;overflow:hidden}
 .smart-dropdown.active{display:flex;animation:popIn .25s var(--ease) both}
@@ -938,15 +944,17 @@ class SmartSelect {
       `;
     }).filter(Boolean).join('');
     
-    const chipEls = this.inputEl.querySelectorAll('.smart-chip');
-    chipEls.forEach(el => el.remove());
-    
+    // Удаляем старые чипсы
+    $$('.smart-chip', this.inputEl).forEach(el => el.remove());
+
+    // Добавляем новые чипсы перед placeholder
     if (chips) {
-      this.placeholderEl.insertAdjacentHTML('afterend', chips);
+      this.placeholderEl.insertAdjacentHTML('beforebegin', chips);
     }
+
     
     this.placeholderEl.style.display = this.selectedIds.length ? 'none' : 'inline';
-    
+
     $$('.chip-remove', this.inputEl).forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
