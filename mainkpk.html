@@ -20,7 +20,7 @@
 --r:12px; --rs:8px;
 --ease:cubic-bezier(.2,.8,.3,1); --ease2:cubic-bezier(.34,1.4,.44,1);
 --nav-h:70px; --status-h:56px;
---card-gap:.9rem; --thumb-size:84px;
+--card-gap:.9rem; --thumb-size:96px; /* УВЕЛИЧЕНО ДЛЯ КРАСОТЫ */
 }
 [data-theme="night"]{
 --bg0:#120404; --bg1:#1a0606; --bg2:#230909; --bg3:#2b0c0c;
@@ -150,10 +150,11 @@ align-items:center;gap:.85rem;color:var(--text);text-align:left;transition:trans
 .ach .an{font-size:.7rem;font-weight:600}
 .ach .ad{font-size:.6rem;color:var(--faint)}
 .card-list{display:flex;flex-direction:column;gap:var(--card-gap)}
-.rcard{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1rem;cursor:pointer;position:relative;
+/* УЛУЧШЕННЫЕ КАРТОЧКИ */
+.rcard{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);padding:1.1rem;cursor:pointer;position:relative;
 overflow:hidden;transition:transform .25s var(--ease),border-color .25s,box-shadow .25s;animation:cardIn .5s var(--ease) both;animation-delay:calc(var(--i)*35ms);
-display:flex;gap:1rem;align-items:center;will-change:transform}
-.rcard:hover{border-color:var(--amber);transform:translateX(5px);box-shadow:0 8px 28px rgba(0,0,0,.4),0 0 0 1px var(--amber-glow)}
+display:flex;gap:1.1rem;align-items:center;will-change:transform}
+.rcard:hover{border-color:var(--amber);transform:translateX(5px);box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 0 1px var(--amber-glow)}
 .rcard:hover .name{text-shadow:-1px 0 rgba(255,0,0,.25),1px 0 rgba(0,0,255,.25)}
 .rcard:active{transform:translateX(5px) scale(.99)}
 .rcard.encrypted{border-color:var(--faint);background:linear-gradient(135deg,var(--bg1),color-mix(in srgb,var(--faint) 15%,var(--bg1)));cursor:not-allowed}
@@ -162,13 +163,13 @@ display:flex;gap:1rem;align-items:center;will-change:transform}
 .rcard.swipe-enter{animation:swipeSlide .35s var(--ease) both}
 .rcard.swipe-exit{animation:swipeSlideOut .35s var(--ease) both}
 .rcard .thumb{width:var(--thumb-size);height:var(--thumb-size);border-radius:var(--rs);object-fit:cover;flex-shrink:0;border:1px solid var(--line2);filter:saturate(.9) contrast(1.05);box-shadow:0 4px 12px rgba(0,0,0,.25)}
-.rcard .thumb-ph{width:var(--thumb-size);height:var(--thumb-size);border-radius:var(--rs);flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:1px solid var(--line2);box-shadow:inset 0 2px 8px rgba(0,0,0,.2)}
+.rcard .thumb-ph{width:var(--thumb-size);height:var(--thumb-size);border-radius:var(--rs);flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:2.4rem;border:1px solid var(--line2);box-shadow:inset 0 2px 8px rgba(0,0,0,.2)}
 .rcard .body{flex:1;min-width:0}
-.rcard .top{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
+.rcard .top{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.4rem}
 .rcard .id{font-family:var(--mono);font-size:.62rem;color:var(--faint);letter-spacing:.5px}
-.rcard .name{font-weight:600;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
-.rcard .desc{font-size:.82rem;color:var(--dim);margin-top:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
-.rcard .bars{display:flex;gap:.7rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+.rcard .name{font-weight:600;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.rcard .desc{font-size:.85rem;color:var(--dim);margin-top:.15rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.5}
+.rcard .bars{display:flex;gap:.7rem;margin-top:.6rem;flex-wrap:wrap;align-items:center}
 .mini-bar{display:flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.58rem;color:var(--faint)}
 .segs{display:flex;gap:1.5px}
 .segs i{width:6px;height:10px;background:var(--bg3);border-radius:1.5px;display:block;transition:background .2s}
@@ -370,12 +371,58 @@ font-family:var(--mono);font-size:.75rem;display:flex;align-items:center;gap:.7r
 .lightbox.active{display:flex;animation:fadeIn .3s both}
 .lightbox img{max-width:92vw;max-height:92vh;border-radius:var(--r);border:2px solid var(--amber);box-shadow:0 0 50px rgba(0,0,0,.6)}
 .corrupt-file{background:color-mix(in srgb,var(--warn) 12%,var(--bg1));border:1px dashed var(--warn);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:.6rem;font-family:var(--mono);font-size:.68rem;color:var(--warn)}
-.org-card{background:linear-gradient(160deg,var(--bg2),var(--bg1));border:1px solid var(--line2);border-radius:var(--r);padding:1.2rem;position:relative;overflow:hidden;cursor:pointer;transition:.25s var(--ease)}
-.org-card:hover{border-color:var(--info);transform:translateY(-3px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
-.org-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--info),transparent);opacity:.7}
-.org-acronym{font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--info);letter-spacing:2px;text-shadow:0 0 12px rgba(111,168,201,.3)}
-.org-name{font-size:.85rem;color:var(--dim);margin:.3rem 0 .8rem;line-height:1.4}
-.org-stats{display:flex;gap:1rem;font-family:var(--mono);font-size:.6rem;color:var(--faint);text-transform:uppercase;letter-spacing:1px}
+
+/* УЛУЧШЕННЫЙ ДИЗАЙН КАРТОЧЕК ОРГАНИЗАЦИЙ */
+.org-card{
+background:linear-gradient(145deg,var(--bg2),var(--bg1));
+border:1px solid var(--line2);
+border-left:3px solid var(--info);
+border-radius:var(--r);
+padding:1.4rem;
+position:relative;
+overflow:hidden;
+cursor:pointer;
+transition:.25s var(--ease);
+}
+.org-card:hover{
+border-color:var(--info);
+transform:translateY(-4px);
+box-shadow:0 12px 32px rgba(0,0,0,.4),0 0 0 1px var(--info);
+}
+.org-card::before{
+content:'⚖';
+position:absolute;
+top:1rem;
+right:1rem;
+font-size:1.5rem;
+opacity:0.15;
+}
+.org-acronym{
+font-family:var(--mono);
+font-size:1.3rem;
+font-weight:700;
+color:var(--info);
+letter-spacing:2px;
+text-shadow:0 0 12px rgba(111,168,201,.3);
+}
+.org-name{
+font-size:0.8rem;
+color:var(--dim);
+margin:0.4rem 0 1rem;
+line-height:1.4;
+font-style:italic;
+}
+.org-stats{
+display:flex;
+gap:1rem;
+font-family:var(--mono);
+font-size:0.6rem;
+color:var(--faint);
+text-transform:uppercase;
+letter-spacing:1px;
+border-top:1px solid var(--line);
+padding-top:0.8rem;
+}
 </style>
 </head>
 <body class="scanline-fx">
@@ -453,7 +500,7 @@ font-family:var(--mono);font-size:.75rem;display:flex;align-items:center;gap:.7r
 <div class="sec-title">Исследовательские организации</div>
 <div class="db-toolbar" style="justify-content:space-between">
 <span style="font-family:var(--mono);font-size:.65rem;color:var(--dim)">Реестр активных групп</span>
-<button class="btn primary" id="addOrg">＋ НОВАЯ ОРГАНИЗАЦИЯ</button>
+<button class="btn primary" id="addOrg">＋ НОВЫЙ ОТРЯД</button>
 </div>
 <div class="card-list" id="orgList"></div>
 </section>
@@ -499,7 +546,7 @@ font-family:var(--mono);font-size:.75rem;display:flex;align-items:center;gap:.7r
 <nav class="bottom-nav">
 <button class="nav-btn active" data-nav="overview"><span class="ni">◈</span><span class="nl">ОБЗОР</span></button>
 <button class="nav-btn" data-nav="database"><span class="ni">▤</span><span class="nl">БАЗА</span></button>
-<button class="nav-btn" data-nav="orgs"><span class="ni">⚖</span><span class="nl">ОРГИ</span></button>
+<button class="nav-btn" data-nav="orgs"><span class="ni">⚖</span><span class="nl">ОТРЯДЫ</span></button>
 <button class="nav-btn" data-nav="map"><span class="ni">✛</span><span class="nl">КАРТА</span></button>
 <button class="nav-btn" data-nav="scan"><span class="ni">◎</span><span class="nl">СКАН</span></button>
 <button class="nav-btn" data-nav="journal"><span class="ni">✎</span><span class="nl">ЖУРНАЛ</span></button>
@@ -799,13 +846,15 @@ el.toastWrap.appendChild(t);
 setTimeout(()=>{t.classList.add('hide');setTimeout(()=>t.remove(),300)}, type==='ach'?3800:2600);
 }
 
-/* ═══════ 8. GITHUB API ═══════ */
+/* ═══════ 8. GITHUB API (Read/Write Split) ═══════ */
 const GH = {
 get owner(){return store.raw('gh_owner')},
 get repo(){return store.raw('gh_repo')},
 get branch(){return store.raw('gh_branch')||'main'},
 get token(){return store.raw('gh_token')},
-configured(){return !!(this.owner&&this.repo&&this.token)},
+canRead(){return !!(this.owner&&this.repo)},
+canWrite(){return !!(this.owner&&this.repo&&this.token)},
+configured(){return this.canRead()},
 headers(){const h={'Accept':'application/vnd.github.v3+json'};if(this.token)h['Authorization']='token '+this.token;return h},
 base(){return `https://api.github.com/repos/${this.owner}/${this.repo}/contents`},
 async safeJson(resp){
@@ -826,7 +875,7 @@ if(data===null) throw new Error('Пустой или невалидный JSON �
 return data;
 },
 async list(folder){
-if(!this.owner||!this.repo) return [];
+if(!this.canRead()) return [];
 try{
 const items = await this.req(`${this.base()}/${folder}`);
 if(!Array.isArray(items)) return [];
@@ -848,19 +897,62 @@ return {ok:true, data:parsed};
 }catch(e){ return {ok:false, reason:'Сеть: '+e.message, name:fileName}; }
 },
 async commit(path,obj,sha){
-if(!this.configured()) throw new Error('GitHub не настроен');
+if(!this.canWrite()){showAuthRequiredModal(); throw new Error('Требуется токен GitHub')};
 const body={message:`update ${path}`,content:b64(JSON.stringify(obj,null,2)),branch:this.branch};
 if(!sha){try{const info=await this.req(`${this.base()}/${path}`);sha=info.sha}catch(e){if(e.status!==404)throw e}}
 if(sha) body.sha=sha;
 return this.req(`${this.base()}/${path}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
 },
 async del(path,sha){
-if(!this.configured()) throw new Error('GitHub не настроен');
+if(!this.canWrite()){showAuthRequiredModal(); throw new Error('Требуется токен GitHub')};
 if(!sha){const info=await this.req(`${this.base()}/${path}`);sha=info.sha}
 return this.req(`${this.base()}/${path}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:`delete ${path}`,sha,branch:this.branch})});
+},
+async uploadImage(file){
+if(!this.canWrite()){showAuthRequiredModal(); throw new Error('Требуется токен GitHub')};
+const name=`images/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+const b64dat=await new Promise((res,rej)=>{const rd=new FileReader();rd.onload=()=>res(rd.result.split(',')[1]);rd.onerror=rej;rd.readAsDataURL(file)});
+const r=await this.req(`${this.base()}/${name}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:`upload ${name}`,content:b64dat,branch:this.branch})});
+return r.content.download_url;
 }
 };
 function b64(str){try{const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin)}catch(e){return ''}}
+
+function showAuthRequiredModal(){
+const modal = document.createElement('div');
+modal.className = 'modal active';
+modal.style.zIndex = '600';
+modal.innerHTML = `
+<div class="sheet" style="max-width:500px">
+<div class="grab"></div>
+<button class="close-x" data-close>✕</button>
+<h2 style="color:var(--amber)">🔐 Требуется авторизация</h2>
+<p class="sub" style="margin:1rem 0;line-height:1.6">
+Для сохранения изменений в базу данных требуется токен GitHub.<br>
+Вы можете:<br>
+• <b>Настроить GitHub</b> — ввести токен для полной синхронизации<br>
+• <b>Экспортировать изменения</b> — сохранить текущие данные в JSON файл
+</p>
+<div class="dossier-actions" style="margin-top:1.5rem">
+<button class="btn primary" id="authSetup" style="flex:1">⚙ Настроить GitHub</button>
+<button class="btn" id="authExport">⤓ Экспорт в файл</button>
+<button class="btn ghost" data-close>Отмена</button>
+</div>
+</div>
+`;
+document.body.appendChild(modal);
+document.body.style.overflow = 'hidden';
+const close = () => { modal.classList.remove('active'); setTimeout(() => modal.remove(), 300); document.body.style.overflow = ''; };
+modal.querySelector('[data-close]').addEventListener('click', close);
+modal.addEventListener('click', e => { if(e.target === modal) close(); });
+modal.querySelector('#authSetup').addEventListener('click', () => { close(); openSettings(); });
+modal.querySelector('#authExport').addEventListener('click', () => {
+close();
+const blob = new Blob([JSON.stringify(state.data, null, 2)], {type: 'application/json'});
+const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `strannik_backup_${Date.now()}.json`; a.click();
+URL.revokeObjectURL(a.href); toast('Изменения экспортированы в файл', 'ok');
+});
+}
 
 /* ═══════ 9. ДАННЫЕ ═══════ */
 function ensureDefaults(obj,type){
@@ -908,7 +1000,7 @@ state.data[type] = good;
 if(bad.length) state.corrupt.push(...bad);
 state.loaded.add(type);
 }catch(e){
-if(e.message !== 'GitHub не настроен') toast('Ошибка загрузки '+type+': '+e.message, 'err');
+if(e.message !== 'GitHub не настроен' && e.message !== 'Требуется токен GitHub') toast('Ошибка загрузки '+type+': '+e.message, 'err');
 }
 }
 async function loadAll(){
@@ -1163,7 +1255,7 @@ more.style.display=arr.length>state.dbShown?'inline-flex':'none';
 }
 $('#showMore').addEventListener('click',()=>{state.dbShown+=PAGE_SIZE;renderDatabase();SFX.play('click')});
 $('#addNew').addEventListener('click',()=>{
-if(!GH.configured()){openSettings();toast('Сначала настрой GitHub','err');return}
+if(!GH.canWrite()){showAuthRequiredModal();return}
 openEditor(state.section,null);
 });
 
@@ -1244,7 +1336,7 @@ closeDossier(); renderOrgs(); toast('Организация удалена','ok'
 }
 
 $('#addOrg').addEventListener('click', () => {
-if(!GH.configured()){openSettings();toast('Сначала настрой GitHub','err');return}
+if(!GH.canWrite()){showAuthRequiredModal();return}
 openEditor('orgs', null);
 });
 
@@ -1449,7 +1541,6 @@ ${type !== 'orgs' ? `
 el.editModal.classList.add('active'); document.body.style.overflow='hidden';
 $('[data-close]',el.editSheet).addEventListener('click',()=>{el.editModal.classList.remove('active');document.body.style.overflow='';SFX.play('close')});
 
-// Template logic for Orgs
 if(type === 'orgs' && isNew){
 $('#orgTemplate').addEventListener('change', (e) => {
 const tpl = ORG_TEMPLATES[e.target.value];
@@ -1658,9 +1749,16 @@ img.setAttribute('clip-path','url(#clip-'+n.id+')');
 img.setAttribute('preserveAspectRatio','xMidYMid slice');
 thumbGroup=img;
 }
-const t=document.createElementNS(NS,'text');
-t.textContent='#'+n.id; t.setAttribute('font-size','10'); t.setAttribute('fill','var(--dim)');
-t.setAttribute('font-family','IBM Plex Mono'); t.setAttribute('text-anchor','middle');
+const tId=document.createElementNS(NS,'text');
+tId.textContent='#'+n.id; tId.setAttribute('font-size','10'); tId.setAttribute('fill','var(--dim)');
+tId.setAttribute('font-family','IBM Plex Mono'); tId.setAttribute('text-anchor','middle');
+
+const titleText = n.obj.title ? (n.obj.title.length > 15 ? n.obj.title.substring(0, 15) + '...' : n.obj.title) : '';
+const tName=document.createElementNS(NS,'text');
+tName.textContent=titleText; tName.setAttribute('font-size','9'); tName.setAttribute('fill','var(--text)');
+tName.setAttribute('font-family','IBM Plex Sans'); tName.setAttribute('text-anchor','middle');
+tName.setAttribute('font-weight', '500');
+
 if(hasThumb){
 const bg=document.createElementNS(NS,'circle');
 bg.setAttribute('r',r+2); bg.setAttribute('fill','var(--bg1)'); bg.setAttribute('stroke','var(--line2)'); bg.setAttribute('stroke-width','1');
@@ -1669,15 +1767,16 @@ gg.appendChild(thumbGroup);
 } else {
 gg.appendChild(c);
 }
-gg.appendChild(t);
+gg.appendChild(tId);
+gg.appendChild(tName);
 nodeG.appendChild(gg);
 gg.addEventListener('click',()=>openDossier('levels',n.id));
-return {g:gg,n,hasThumb,r};
+return {g:gg,n,hasThumb,r,tId,tName};
 });
 function draw(){
 linkEls.forEach(({el,l})=>{const a=nmap[l.a],b=nmap[l.b];
 el.setAttribute('x1',a.x); el.setAttribute('y1',a.y); el.setAttribute('x2',b.x); el.setAttribute('y2',b.y)});
-nodeEls.forEach(({g,n,hasThumb,r})=>{
+nodeEls.forEach(({g,n,hasThumb,r,tId,tName})=>{
 if(hasThumb){
 const img=g.querySelector('image');
 const bg=g.querySelector('circle[r="'+(r+2)+'"]');
@@ -1689,8 +1788,8 @@ if(clipCircle){clipCircle.setAttribute('cx',n.x); clipCircle.setAttribute('cy',n
 const c=g.querySelector('circle');
 if(c){c.setAttribute('cx',n.x); c.setAttribute('cy',n.y);}
 }
-const t=g.querySelector('text');
-if(t){t.setAttribute('x',n.x); t.setAttribute('y',n.y-(hasThumb?r+16:12))}
+if(tId){tId.setAttribute('x',n.x); tId.setAttribute('y',n.y-(hasThumb?r+16:12))}
+if(tName){tName.setAttribute('x',n.x); tName.setAttribute('y',n.y+(hasThumb?r+26:22))}
 });
 }
 let frames=0, alpha=1;
@@ -1871,10 +1970,21 @@ URL.revokeObjectURL(a.href); toast('Журнал экспортирован','ok
 
 /* ═══════ 19. НАСТРОЙКИ ═══════ */
 function openSettings(){
+const isReadOnly = !GH.canWrite();
 el.settingsSheet.innerHTML=`
 <div class="grab"></div><button class="close-x" data-close>✕</button>
 <h2>⚙ Настройки GitHub</h2>
-<p class="sub">Данные хранятся в вашем репозитории.</p>
+<div style="margin:1rem 0;padding:.8rem;border-radius:var(--rs);border:1px solid ${isReadOnly?'var(--warn)':'var(--safe)'};background:${isReadOnly?'color-mix(in srgb,var(--warn) 8%,var(--bg2))':'color-mix(in srgb,var(--safe) 8%,var(--bg2))'}">
+<div style="font-family:var(--mono);font-size:.7rem;color:${isReadOnly?'var(--warn)':'var(--safe)'};letter-spacing:1px;margin-bottom:.3rem">
+${isReadOnly ? '⚠ РЕЖИМ ТОЛЬКО ЧТЕНИЕ' : '✓ ПОЛНЫЙ ДОСТУП'}
+</div>
+<div style="font-size:.8rem;color:var(--dim)">
+${isReadOnly 
+? 'Вы можете просматривать данные, но не можете сохранять изменения. Введите токен для полного доступа.' 
+: 'Вы можете просматривать и сохранять изменения в репозиторий.'}
+</div>
+</div>
+<p class="sub">Данные хранятся в вашем репозитории. Токен — только локально.</p>
 <div style="margin-top:1.2rem">
 <div class="frow">
 <div class="fgroup"><label>Owner</label><input id="cfgOwner" value="${esc(GH.owner||'')}" placeholder="username"></div>
@@ -1882,10 +1992,18 @@ el.settingsSheet.innerHTML=`
 </div>
 <div class="frow">
 <div class="fgroup"><label>Branch</label><input id="cfgBranch" value="${esc(GH.branch)}" placeholder="main"></div>
-<div class="fgroup"><label>Token</label><input id="cfgToken" type="password" value="${esc(GH.token||'')}" placeholder="ghp_…"></div>
+<div class="fgroup"><label>Token (опционально)</label><input id="cfgToken" type="password" value="${esc(GH.token||'')}" placeholder="ghp_… (для записи)"></div>
 </div>
-<div class="dossier-actions">
-<button class="btn primary" id="cfgSave" style="flex:1">Сохранить и загрузить</button>
+<div style="margin-top:.8rem;padding:.7rem;background:var(--bg2);border-radius:var(--rs);font-size:.75rem;color:var(--dim);line-height:1.5">
+<b style="color:var(--amber)">💡 Как это работает:</b><br>
+• <b>Без токена</b> — только чтение из публичного репозитория<br>
+• <b>С токеном</b> — чтение + запись (синхронизация изменений)<br>
+• Токен хранится только в вашем браузере
+</div>
+<div class="dossier-actions" style="margin-top:1rem">
+<button class="btn primary" id="cfgSave" style="flex:1">💾 Сохранить и загрузить</button>
+<button class="btn" id="cfgExport">⤓ Экспорт</button>
+<button class="btn" id="cfgImport">⤒ Импорт</button>
 </div></div>`;
 el.settingsModal.classList.add('active'); document.body.style.overflow='hidden';
 $('[data-close]',el.settingsSheet).addEventListener('click',closeSettings);
@@ -1896,14 +2014,48 @@ store.rawset('gh_branch',$('#cfgBranch').value.trim()||'main');
 store.rawset('gh_token',$('#cfgToken').value.trim());
 closeSettings(); toast('Настройки сохранены. Загрузка…');
 state.loaded.clear(); state.corrupt=[]; await loadAll(); renderOverview();
-unlock('sync'); toast('Данные загружены','ok'); SFX.play('success');
+if(GH.canWrite()){
+logEvent('sync','Полная синхронизация'); unlock('sync'); toast('Данные загружены (полный доступ)','ok');
+} else {
+toast('Данные загружены (только чтение)','ok');
+}
+SFX.play('success');
+});
+$('#cfgExport').addEventListener('click',()=>{
+const blob=new Blob([JSON.stringify(state.data,null,2)],{type:'application/json'});
+const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='strannik_backup.json'; a.click();
+URL.revokeObjectURL(a.href); toast('Экспортировано','ok');
+});
+$('#cfgImport').addEventListener('click',()=>{
+const inp=document.createElement('input'); inp.type='file'; inp.accept='.json';
+inp.onchange=async e=>{
+const f=e.target.files[0]; if(!f) return;
+try{
+const data=JSON.parse(await f.text());
+if(!GH.canWrite()){
+if(!confirm('У вас нет токена GitHub. Импортировать данные локально? (Они не будут синхронизированы)')) return;
+for(const t of FOLDERS){
+if(data[t]){
+state.data[t] = data[t].map(obj => { ensureDefaults(obj, t); return obj; });
+}
+}
+renderOverview(); closeSettings(); toast('Данные импортированы локально','ok'); SFX.play('success');
+return;
+}
+if(!confirm('Импортировать данные? Записи в репозитории будут перезаписаны.')) return;
+toast('Импорт…');
+for(const t of FOLDERS){for(const obj of (data[t]||[])){ensureDefaults(obj,t);await GH.commit(`${t}/${t}_${obj.id}.json`,obj)}}
+state.loaded.clear(); state.corrupt=[]; await loadAll(); renderOverview(); closeSettings(); toast('Импорт завершён','ok'); SFX.play('success');
+}catch(err){toast('Ошибка импорта: '+err.message,'err');SFX.play('error')}
+};
+inp.click();
 });
 }
 function closeSettings(){el.settingsModal.classList.remove('active');document.body.style.overflow=''}
 $('#openSettings').addEventListener('click',()=>{openSettings();SFX.play('open')});
 el.settingsModal.addEventListener('click',e=>{if(e.target===el.settingsModal) closeSettings()});
 $('#syncBtn').addEventListener('click',async()=>{
-if(!GH.owner||!GH.repo){openSettings();return}
+if(!GH.canRead()){openSettings();return}
 toast('Синхронизация…'); state.loaded.clear(); state.corrupt=[]; await loadAll();
 renderOverview(); if(state.screen==='database') renderDatabase(); if(state.screen==='orgs') renderOrgs();
 unlock('sync'); toast('Синхронизировано','ok'); SFX.play('success');
@@ -1991,11 +2143,46 @@ logEvent('boot','Система запущена');
 unlock('boot');
 updateLocChip(); typeTerm();
 $('#statRow').innerHTML=['levels','entities','items','foods'].map(()=>`<div class="mini-stat"><div class="skel" style="height:28px;width:50%;margin:0 auto"></div><div class="l">ЗАГРУЗКА</div></div>`).join('');
-if(GH.owner && GH.repo){
+
+if(GH.canRead()){
 await loadAll();
+if(GH.canWrite()){
+toast('✓ Подключено к GitHub (полный доступ)', 'ok');
 } else {
-toast('Настрой GitHub для синхронизации');
+toast('📖 Подключено к GitHub (только чтение)', 'info');
 }
+} else {
+setTimeout(() => {
+const modal = document.createElement('div');
+modal.className = 'modal active';
+modal.style.zIndex = '600';
+modal.innerHTML = `
+<div class="sheet" style="max-width:500px">
+<div class="grab"></div>
+<h2 style="color:var(--amber)">👋 Добро пожаловать!</h2>
+<p class="sub" style="margin:1rem 0;line-height:1.6">
+Для работы с базой данных укажите адрес публичного GitHub репозитория.<br><br>
+<b>Пример:</b><br>
+Owner: <code>username</code><br>
+Repo: <code>strannik-db</code><br>
+Branch: <code>main</code><br><br>
+Токен нужен только если вы хотите сохранять изменения.
+</p>
+<div class="dossier-actions" style="margin-top:1.5rem">
+<button class="btn primary" id="welcomeSetup" style="flex:1">⚙ Настроить</button>
+<button class="btn ghost" data-close>Позже</button>
+</div>
+</div>
+`;
+document.body.appendChild(modal);
+document.body.style.overflow = 'hidden';
+const close = () => { modal.classList.remove('active'); setTimeout(() => modal.remove(), 300); document.body.style.overflow = ''; };
+modal.querySelector('[data-close]').addEventListener('click', close);
+modal.addEventListener('click', e => { if(e.target === modal) close(); });
+modal.querySelector('#welcomeSetup').addEventListener('click', () => { close(); openSettings(); });
+}, 1000);
+}
+
 updateLocChip(); renderOverview();
 })();
 })();
