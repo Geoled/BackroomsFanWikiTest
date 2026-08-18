@@ -265,6 +265,48 @@ input,textarea,select{font-family:inherit;font-size:16px}
 .frow{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
 @media(max-width:480px){.frow{grid-template-columns:1fr}}
 
+/* ═══════ SMART TAG INPUT ═══════ */
+.smart-select{position:relative;width:100%}
+.smart-input{display:flex;flex-wrap:wrap;gap:.4rem;min-height:42px;padding:.5rem .7rem;background:var(--bg0);border:1px solid var(--line);border-radius:var(--rs);cursor:text;transition:.25s var(--ease);align-items:center}
+.smart-input:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-glow)}
+.smart-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .5rem;background:var(--bg2);border:1px solid var(--line2);border-radius:6px;font-family:var(--mono);font-size:.65rem;color:var(--text);transition:.2s}
+.smart-chip:hover{border-color:var(--amber)}
+.smart-chip .chip-remove{width:16px;height:16px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--bg3);color:var(--dim);cursor:pointer;font-size:.7rem;transition:.2s}
+.smart-chip .chip-remove:hover{background:var(--danger);color:#fff}
+.smart-chip .chip-icon{font-size:.75rem}
+.smart-input-hidden{position:absolute;opacity:0;width:1px;height:1px;overflow:hidden}
+.smart-dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--bg1);border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:200;max-height:320px;display:none;flex-direction:column;overflow:hidden}
+.smart-dropdown.active{display:flex;animation:popIn .25s var(--ease) both}
+.smart-search-wrap{padding:.6rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg1);z-index:1}
+.smart-search{width:100%;padding:.55rem .7rem .55rem 2.2rem;background:var(--bg0);border:1px solid var(--line);border-radius:var(--rs);color:var(--text);font-size:.85rem;font-family:var(--sans);transition:.2s}
+.smart-search:focus{border-color:var(--amber);outline:none}
+.smart-search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--faint);font-size:1rem;pointer-events:none}
+.smart-list{flex:1;overflow-y:auto;padding:.4rem}
+.smart-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .7rem;border-radius:var(--rs);cursor:pointer;transition:.2s;margin-bottom:.2rem}
+.smart-item:hover{background:var(--bg2)}
+.smart-item.selected{background:color-mix(in srgb,var(--amber) 12%,var(--bg2));border:1px solid var(--amber)}
+.smart-item.disabled{opacity:.35;pointer-events:none}
+.smart-item-icon{font-size:1.1rem;width:24px;display:flex;align-items:center;justify-content:center}
+.smart-item-body{flex:1;min-width:0}
+.smart-item-title{font-size:.85rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.smart-item-sub{font-size:.65rem;color:var(--faint);font-family:var(--mono);margin-top:.1rem}
+.smart-item-meta{font-size:.6rem;color:var(--dim);font-style:italic}
+.smart-empty{padding:1.5rem;text-align:center;color:var(--faint);font-size:.8rem}
+.smart-count{padding:.4rem .7rem;border-top:1px solid var(--line);font-family:var(--mono);font-size:.6rem;color:var(--dim);display:flex;justify-content:space-between;align-items:center}
+.smart-apply-btn{padding:.4rem .9rem;background:var(--amber);color:#1a1406;border:none;border-radius:var(--rs);font-family:var(--mono);font-size:.65rem;font-weight:600;cursor:pointer;transition:.2s}
+.smart-apply-btn:hover{background:var(--amber2)}
+.smart-apply-btn:disabled{opacity:.4;pointer-events:none}
+
+/* Bottom Sheet для мобильных */
+.smart-sheet{position:fixed;left:0;right:0;bottom:0;background:var(--bg1);border-radius:18px 18px 0 0;padding:1.4rem;transform:translateY(100%);transition:transform .4s var(--ease2);z-index:350;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+.smart-sheet.active{transform:translateY(0)}
+.smart-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:349;display:none}
+.smart-sheet-overlay.active{display:block;animation:fadeIn .3s both}
+@media(min-width:768px){.smart-sheet{display:none}}
+.smart-sheet .smart-search-wrap{position:sticky;top:0}
+.smart-sheet .smart-list{flex:1;overflow-y:auto}
+</style>
+
 .map-wrap{background:var(--bg1);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;position:relative;height:56vh;min-height:360px;animation:cardIn .5s var(--ease) both}
 .map-wrap svg{width:100%;height:100%;display:block;cursor:grab}
 .map-wrap svg:active{cursor:grabbing}
@@ -565,7 +607,374 @@ function mdRender(text){ try{ return window.marked ? marked.parse(text||'') : es
 function splitIds(str){ return String(str||'').split(',').map(s=>s.trim()).filter(Boolean) }
 function safeArr(v){ return Array.isArray(v)?v:[] }
 
-/* ═══════ 5. ЗВУК (SFX) ═══════ */
+/* ═══════ 5. SMART TAG INPUT COMPONENT ═══════ */
+class SmartSelect {
+  constructor(container, config) {
+    this.container = typeof container === 'string' ? $(container) : container;
+    if (!this.container) return;
+    
+    this.config = {
+      sourceType: config.sourceType || 'levels',
+      multiple: config.multiple !== false,
+      excludeId: config.excludeId || null,
+      bindTo: config.bindTo || 'ids',
+      placeholder: config.placeholder || 'Выберите...',
+      onOpen: config.onOpen || null,
+      onClose: config.onClose || null,
+      filterFn: config.filterFn || null
+    };
+    
+    this.selectedIds = [];
+    this.isOpen = false;
+    this.isMobile = window.innerWidth < 768;
+    
+    this.render();
+    this.attachEvents();
+  }
+  
+  render() {
+    const existing = this.container.querySelector('.smart-select');
+    if (existing) existing.remove();
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'smart-select';
+    wrapper.innerHTML = `
+      <div class="smart-input" tabindex="0">
+        <span class="smart-placeholder" style="color:var(--faint);font-size:.85rem">${this.config.placeholder}</span>
+        <input type="text" class="smart-input-hidden" autocomplete="off">
+      </div>
+      <div class="smart-dropdown">
+        <div class="smart-search-wrap">
+          <span class="smart-search-icon">⌕</span>
+          <input type="text" class="smart-search" placeholder="Поиск по ID или названию...">
+        </div>
+        <div class="smart-list"></div>
+        ${this.config.multiple ? `<div class="smart-count"><span>Выбрано: <b class="smart-count-num">0</b></span><button class="smart-apply-btn" disabled>Применить</button></div>` : ''}
+      </div>
+    `;
+    
+    this.container.appendChild(wrapper);
+    this.wrapper = wrapper;
+    this.inputEl = $('.smart-input', wrapper);
+    this.placeholderEl = $('.smart-placeholder', wrapper);
+    this.hiddenInput = $('.smart-input-hidden', wrapper);
+    this.dropdown = $('.smart-dropdown', wrapper);
+    this.searchInput = $('.smart-search', wrapper);
+    this.listEl = $('.smart-list', wrapper);
+    this.countNum = $('.smart-count-num', wrapper);
+    this.applyBtn = $('.smart-apply-btn', wrapper);
+    
+    this.updateChips();
+  }
+  
+  attachEvents() {
+    this.inputEl.addEventListener('click', (e) => {
+      if (e.target.classList.contains('chip-remove')) return;
+      this.toggleDropdown();
+    });
+    
+    this.inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && this.selectedIds.length && this.searchInput.value === '') {
+        this.removeId(this.selectedIds[this.selectedIds.length - 1]);
+        e.preventDefault();
+      } else if (e.key === 'Escape') {
+        this.closeDropdown();
+      } else if (e.key === 'Enter' && !this.isOpen) {
+        this.openDropdown();
+      }
+    });
+    
+    this.searchInput.addEventListener('input', (e) => {
+      this.renderList(e.target.value);
+    });
+    
+    this.searchInput.addEventListener('click', (e) => e.stopPropagation());
+    
+    if (this.applyBtn) {
+      this.applyBtn.addEventListener('click', () => {
+        this.closeDropdown();
+        this.triggerChange();
+      });
+    }
+    
+    document.addEventListener('click', (e) => {
+      if (!this.wrapper.contains(e.target)) {
+        this.closeDropdown();
+      }
+    });
+    
+    window.addEventListener('resize', () => {
+      this.isMobile = window.innerWidth < 768;
+    });
+  }
+  
+  toggleDropdown() {
+    if (this.isOpen) this.closeDropdown();
+    else this.openDropdown();
+  }
+  
+  openDropdown() {
+    if (this.isOpen) return;
+    this.isOpen = true;
+    this.searchInput.value = '';
+    
+    if (this.isMobile) {
+      this.openBottomSheet();
+    } else {
+      this.dropdown.classList.add('active');
+      this.renderList('');
+      this.searchInput.focus();
+    }
+    
+    if (this.config.onOpen) this.config.onOpen(this.selectedIds);
+  }
+  
+  closeDropdown() {
+    if (!this.isOpen) return;
+    this.isOpen = false;
+    
+    if (this.isMobile) {
+      this.closeBottomSheet();
+    } else {
+      this.dropdown.classList.remove('active');
+    }
+    
+    this.inputEl.focus();
+    if (this.config.onClose) this.config.onClose(this.selectedIds);
+  }
+  
+  openBottomSheet() {
+    const overlay = document.createElement('div');
+    overlay.className = 'smart-sheet-overlay';
+    overlay.onclick = () => this.closeBottomSheet();
+    
+    const sheet = document.createElement('div');
+    sheet.className = 'smart-sheet active';
+    sheet.innerHTML = `
+      <div class="smart-search-wrap">
+        <span class="smart-search-icon">⌕</span>
+        <input type="text" class="smart-search" placeholder="Поиск по ID или названию...">
+      </div>
+      <div class="smart-list"></div>
+      ${this.config.multiple ? `<div class="smart-count"><span>Выбрано: <b class="smart-count-num">${this.selectedIds.length}</b></span><button class="smart-apply-btn"${this.selectedIds.length ? '' : ' disabled'}>Применить</button></div>` : ''}
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.appendChild(sheet);
+    
+    this.sheetOverlay = overlay;
+    this.sheet = sheet;
+    this.sheetSearch = $('.smart-search', sheet);
+    this.sheetList = $('.smart-list', sheet);
+    this.sheetCountNum = $('.smart-count-num', sheet);
+    this.sheetApplyBtn = $('.smart-apply-btn', sheet);
+    
+    this.sheetSearch.addEventListener('input', (e) => this.renderList(e.target.value, true));
+    this.sheetSearch.addEventListener('click', (e) => e.stopPropagation());
+    
+    if (this.sheetApplyBtn) {
+      this.sheetApplyBtn.addEventListener('click', () => {
+        this.closeBottomSheet();
+        this.triggerChange();
+      });
+    }
+    
+    this.renderList('', true);
+    this.sheetSearch.focus();
+  }
+  
+  closeBottomSheet() {
+    if (this.sheet) {
+      this.sheet.classList.remove('active');
+      setTimeout(() => {
+        if (this.sheet) this.sheet.remove();
+        this.sheet = null;
+      }, 400);
+    }
+    if (this.sheetOverlay) {
+      this.sheetOverlay.classList.remove('active');
+      setTimeout(() => {
+        if (this.sheetOverlay) this.sheetOverlay.remove();
+        this.sheetOverlay = null;
+      }, 300);
+    }
+  }
+  
+  getData() {
+    let data = state.data[this.config.sourceType] || [];
+    
+    if (this.config.filterFn) {
+      data = this.config.filterFn(data);
+    }
+    
+    return data.filter(item => {
+      if (this.config.excludeId && sameId(item.id, this.config.excludeId)) return false;
+      return true;
+    });
+  }
+  
+  renderList(query = '', isSheet = false) {
+    const listEl = isSheet ? this.sheetList : this.listEl;
+    const countNum = isSheet ? this.sheetCountNum : this.countNum;
+    const applyBtn = isSheet ? this.sheetApplyBtn : this.applyBtn;
+    
+    const allData = this.getData();
+    const q = query.toLowerCase().trim();
+    
+    let filtered = allData.filter(item => {
+      const name = objName(item).toLowerCase();
+      const idStr = String(item.id);
+      return name.includes(q) || idStr.includes(q);
+    });
+    
+    if (!this.config.multiple && this.selectedIds.length > 0) {
+      filtered = filtered.filter(item => sameId(item.id, this.selectedIds[0]));
+    }
+    
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="smart-empty">Ничего не найдено</div>`;
+      if (countNum) countNum.textContent = this.selectedIds.length;
+      if (applyBtn) applyBtn.disabled = !this.selectedIds.length;
+      return;
+    }
+    
+    listEl.innerHTML = filtered.map(item => {
+      const isSelected = this.selectedIds.some(id => sameId(id, item.id));
+      const cs = clsStyle(this.config.sourceType, item.cls);
+      const meta = this.getItemMeta(item);
+      
+      return `
+        <div class="smart-item ${isSelected ? 'selected' : ''}" data-id="${esc(item.id)}">
+          <div class="smart-item-icon">${cs.i}</div>
+          <div class="smart-item-body">
+            <div class="smart-item-title">#${esc(item.id)} · ${esc(objName(item))}</div>
+            ${meta ? `<div class="smart-item-meta">${meta}</div>` : ''}
+          </div>
+          ${this.config.multiple ? (isSelected ? '✓' : '') : ''}
+        </div>
+      `;
+    }).join('');
+    
+    $$('.smart-item', listEl).forEach(itemEl => {
+      itemEl.addEventListener('click', () => {
+        const id = itemEl.dataset.id;
+        this.toggleId(id);
+        if (!this.config.multiple) {
+          setTimeout(() => this.closeDropdown(), 150);
+        } else if (isSheet && countNum && applyBtn) {
+          countNum.textContent = this.selectedIds.length;
+          applyBtn.disabled = !this.selectedIds.length;
+        }
+      });
+    });
+    
+    if (countNum) countNum.textContent = this.selectedIds.length;
+    if (applyBtn) applyBtn.disabled = !this.selectedIds.length;
+  }
+  
+  getItemMeta(item) {
+    if (this.config.sourceType === 'entities' || this.config.sourceType === 'foods' || this.config.sourceType === 'items') {
+      const levels = state.data.levels.filter(l => {
+        if (this.config.sourceType === 'entities') return (l.ent || []).some(id => sameId(id, item.id));
+        if (this.config.sourceType === 'foods') return (l.foodIds || []).some(id => sameId(id, item.id));
+        if (this.config.sourceType === 'items') return (l.itemIds || []).some(id => sameId(id, item.id));
+        return false;
+      });
+      if (levels.length > 0) {
+        return `Встречается на: ${levels.slice(0, 3).map(l => `Ур.${l.id}`).join(', ')}${levels.length > 3 ? '...' : ''}`;
+      }
+    }
+    return '';
+  }
+  
+  toggleId(id) {
+    const idx = this.selectedIds.findIndex(sid => sameId(sid, id));
+    if (idx >= 0) {
+      this.selectedIds.splice(idx, 1);
+    } else {
+      if (!this.config.multiple) {
+        this.selectedIds = [id];
+      } else {
+        this.selectedIds.push(id);
+      }
+    }
+    this.updateChips();
+    if (!this.isMobile) {
+      this.renderList(this.searchInput.value);
+    } else if (this.sheet) {
+      this.renderList(this.sheetSearch.value, true);
+    }
+  }
+  
+  removeId(id) {
+    const idx = this.selectedIds.findIndex(sid => sameId(sid, id));
+    if (idx >= 0) {
+      this.selectedIds.splice(idx, 1);
+      this.updateChips();
+      if (this.isOpen) {
+        if (!this.isMobile) {
+          this.renderList(this.searchInput.value);
+        } else if (this.sheet) {
+          this.renderList(this.sheetSearch.value, true);
+        }
+      }
+    }
+  }
+  
+  updateChips() {
+    const chips = this.selectedIds.map(id => {
+      const item = byId(this.config.sourceType, id);
+      if (!item) return '';
+      const cs = clsStyle(this.config.sourceType, item.cls);
+      return `
+        <span class="smart-chip" data-id="${esc(id)}">
+          <span class="chip-icon">${cs.i}</span>
+          <span>${esc(objName(item))}</span>
+          <span class="chip-remove" data-remove="${esc(id)}">✕</span>
+        </span>
+      `;
+    }).filter(Boolean).join('');
+    
+    const chipEls = this.inputEl.querySelectorAll('.smart-chip');
+    chipEls.forEach(el => el.remove());
+    
+    if (chips) {
+      this.placeholderEl.insertAdjacentHTML('afterend', chips);
+    }
+    
+    this.placeholderEl.style.display = this.selectedIds.length ? 'none' : 'inline';
+    
+    $$('.chip-remove', this.inputEl).forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.removeId(btn.dataset.remove);
+      });
+    });
+  }
+  
+  setValue(ids) {
+    this.selectedIds = Array.isArray(ids) ? [...ids] : splitIds(String(ids));
+    this.updateChips();
+  }
+  
+  getValue() {
+    return this.config.multiple ? this.selectedIds : (this.selectedIds[0] || null);
+  }
+  
+  triggerChange() {
+    const event = new CustomEvent('smartchange', {
+      detail: { value: this.getValue(), ids: this.selectedIds }
+    });
+    this.container.dispatchEvent(event);
+  }
+  
+  destroy() {
+    this.closeDropdown();
+    if (this.wrapper) this.wrapper.remove();
+  }
+}
+
+/* ═══════ 6. ЗВУК (SFX) ═══════ */
 const SFX = {
   ctx:null, audioCache:{},
   ensure(){ if(!this.ctx){ try{ this.ctx=new (window.AudioContext||window.webkitAudioContext)() }catch(e){} } return this.ctx },
@@ -1381,6 +1790,54 @@ function openEditor(type,obj){
   el.editModal.classList.add('active'); document.body.style.overflow='hidden';
   $('[data-close]',el.editSheet).addEventListener('click',()=>{el.editModal.classList.remove('active');document.body.style.overflow='';SFX.play('close')});
 
+  // Инициализация SmartSelect для полей с множественным выбором
+  const smartConfigs = [
+    { field: 'ent', sourceType: 'entities', multiple: true, placeholder: 'Выберите сущности...', label: 'Сущности' },
+    { field: 'foodIds', sourceType: 'foods', multiple: true, placeholder: 'Выберите еду...', label: 'Еда' },
+    { field: 'itemIds', sourceType: 'items', multiple: true, placeholder: 'Выберите объекты...', label: 'Объекты' }
+  ];
+
+  if (type === 'levels') {
+    smartConfigs.push(
+      { field: 'in', sourceType: 'levels', multiple: true, placeholder: 'Выберите входы...', label: 'Входы', excludeId: base.id },
+      { field: 'out', sourceType: 'levels', multiple: true, placeholder: 'Выберите выходы...', label: 'Выходы', excludeId: base.id }
+    );
+  }
+
+  const smartSelects = {};
+  smartConfigs.forEach(cfg => {
+    const fgroup = document.createElement('div');
+    fgroup.className = 'fgroup';
+    fgroup.style.marginTop = '.9rem';
+    const label = document.createElement('label');
+    label.textContent = cfg.label;
+    label.style.cssText = 'display:block;font-family:var(--mono);font-size:.58rem;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-bottom:.35rem';
+    fgroup.appendChild(label);
+    
+    const container = document.createElement('div');
+    container.dataset.field = cfg.field;
+    fgroup.appendChild(container);
+    
+    const oldInput = el.editSheet.querySelector(`[data-f="${cfg.field}"]`);
+    if (oldInput) {
+      oldInput.closest('.fgroup').replaceWith(fgroup);
+    }
+    
+    const smartSelect = new SmartSelect(container, {
+      sourceType: cfg.sourceType,
+      multiple: cfg.multiple,
+      excludeId: cfg.excludeId || null,
+      placeholder: cfg.placeholder
+    });
+    
+    const initialValue = base[cfg.field];
+    if (initialValue) {
+      smartSelect.setValue(Array.isArray(initialValue) ? initialValue : splitIds(String(initialValue)));
+    }
+    
+    smartSelects[cfg.field] = smartSelect;
+  });
+
   $('#addImg').addEventListener('click',()=>{
     const row=document.createElement('div');row.className='img-row';row.style.cssText='display:flex;gap:.5rem;margin-bottom:.5rem';
     row.innerHTML=`<input class="iu" placeholder="URL" style="flex:2"><input class="id" placeholder="Подпись" style="flex:1"><button class="btn ghost ri" type="button">✕</button>`;
@@ -1417,11 +1874,17 @@ function openEditor(type,obj){
     if(type==='levels'){
       newObj.cluster=g('cluster').value;
       newObj.protocol=g('protocol').value;
-      newObj.in=g('in').value;
-      newObj.out=g('out').value;
-      newObj.ent=splitIds(g('ent').value);
-      newObj.foodIds=splitIds(g('foodIds').value);
-      newObj.itemIds=splitIds(g('itemIds').value);
+      // Получаем значения из SmartSelect вместо старых input
+      newObj.in = smartSelects['in'] ? smartSelects['in'].getValue() : splitIds(g('in')?.value || '');
+      newObj.out = smartSelects['out'] ? smartSelects['out'].getValue() : splitIds(g('out')?.value || '');
+      newObj.ent = smartSelects['ent'] ? smartSelects['ent'].getValue() : splitIds(g('ent')?.value || '');
+      newObj.foodIds = smartSelects['foodIds'] ? smartSelects['foodIds'].getValue() : splitIds(g('foodIds')?.value || '');
+      newObj.itemIds = smartSelects['itemIds'] ? smartSelects['itemIds'].getValue() : splitIds(g('itemIds')?.value || '');
+    } else {
+      // Для не-levels типов тоже используем SmartSelect если доступен
+      if (smartSelects['ent']) newObj.ent = smartSelects['ent'].getValue();
+      if (smartSelects['foodIds']) newObj.foodIds = smartSelects['foodIds'].getValue();
+      if (smartSelects['itemIds']) newObj.itemIds = smartSelects['itemIds'].getValue();
     }
     if(type==='entities'){
       // ИСПРАВЛЕНО: больше не перезаписываем survival из protocol
