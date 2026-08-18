@@ -922,12 +922,15 @@ class SmartSelect {
   }
   
   updateChips() {
-    const chips = this.selectedIds.map(id => {
+    const chips = this.selectedIds.map((id, index) => {
       const item = byId(this.config.sourceType, id);
       if (!item) return '';
       const cs = clsStyle(this.config.sourceType, item.cls);
+      const isDangerous = this.isDangerousItem(item);
+      const dragHandle = this.config.multiple && !this.isMobile ? '<span class="chip-drag" data-drag="' + esc(id) + '">⋮⋮</span>' : '';
       return `
-        <span class="smart-chip" data-id="${esc(id)}">
+        <span class="smart-chip ${isDangerous ? 'danger-pulse' : ''}" data-id="${esc(id)}" data-idx="${index}">
+          ${dragHandle}
           <span class="chip-icon">${cs.i}</span>
           <span>${esc(objName(item))}</span>
           <span class="chip-remove" data-remove="${esc(id)}">✕</span>
@@ -950,6 +953,75 @@ class SmartSelect {
         this.removeId(btn.dataset.remove);
       });
     });
+    
+    // Drag & Drop для десктопа
+    if (this.config.multiple && !this.isMobile) {
+      this.initDragAndDrop();
+    }
+  }
+  
+  isDangerousItem(item) {
+    const cls = String(item.cls || '');
+    return cls === '4' || cls === '5' || cls === '!' || cls === 'X';
+  }
+  
+  initDragAndDrop() {
+    let draggedEl = null;
+    let draggedIdx = -1;
+    
+    $$('.smart-chip', this.inputEl).forEach(chip => {
+      chip.setAttribute('draggable', 'true');
+      
+      chip.addEventListener('dragstart', (e) => {
+        draggedEl = chip;
+        draggedIdx = parseInt(chip.dataset.idx);
+        chip.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', draggedIdx);
+      });
+      
+      chip.addEventListener('dragend', () => {
+        chip.classList.remove('dragging');
+        draggedEl = null;
+        draggedIdx = -1;
+        $$('.smart-chip', this.inputEl).forEach(c => c.classList.remove('drag-over'));
+      });
+      
+      chip.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (chip !== draggedEl) {
+          chip.classList.add('drag-over');
+        }
+      });
+      
+      chip.addEventListener('dragleave', () => {
+        chip.classList.remove('drag-over');
+      });
+      
+      chip.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        chip.classList.remove('drag-over');
+        
+        if (draggedEl && chip !== draggedEl) {
+          const targetIdx = parseInt(chip.dataset.idx);
+          this.swapItems(draggedIdx, targetIdx);
+        }
+      });
+    });
+  }
+  
+  swapItems(fromIdx, toIdx) {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+    
+    const newIds = [...this.selectedIds];
+    const [removed] = newIds.splice(fromIdx, 1);
+    newIds.splice(toIdx, 0, removed);
+    
+    this.selectedIds = newIds;
+    this.updateChips();
+    this.triggerChange();
   }
   
   setValue(ids) {
@@ -1901,6 +1973,73 @@ function openEditor(type,obj){
 
     try{
       toast('Сохранение…');
+      // Двустороннее связывание (Auto-Backlinking) для сущностей, еды и объектов
+      const backlinkPromises = [];
+      
+      // Для уровней: обновляем habitat у сущностей
+      if (type === 'levels' && newObj.ent && Array.isArray(newObj.ent)) {
+        newObj.ent.forEach(entId => {
+          const entity = byId('entities', entId);
+          if (entity) {
+            const habitat = Array.isArray(entity.habitat) ? entity.habitat : (entity.habitat ? splitIds(entity.habitat) : []);
+            if (!habitat.some(id => sameId(id, newObj.id))) {
+              habitat.push(newObj.id);
+              const updatedEntity = { ...entity, habitat };
+              backlinkPromises.push(
+                GH.commit(`entities/entities_${entId}.json`, updatedEntity, entity._sha)
+                  .then(sha => { entity._sha = sha; })
+                  .catch(err => console.warn('Не удалось обновить habitat сущности #' + entId, err))
+              );
+            }
+          }
+        });
+      }
+      
+      // Для уровней: обновляем encounteredIn у еды
+      if (type === 'levels' && newObj.foodIds && Array.isArray(newObj.foodIds)) {
+        newObj.foodIds.forEach(foodId => {
+          const food = byId('foods', foodId);
+          if (food) {
+            const encounteredIn = Array.isArray(food.encounteredIn) ? food.encounteredIn : (food.encounteredIn ? splitIds(food.encounteredIn) : []);
+            if (!encounteredIn.some(id => sameId(id, newObj.id))) {
+              encounteredIn.push(newObj.id);
+              const updatedFood = { ...food, encounteredIn };
+              backlinkPromises.push(
+                GH.commit(`foods/foods_${foodId}.json`, updatedFood, food._sha)
+                  .then(sha => { food._sha = sha; })
+                  .catch(err => console.warn('Не удалось обновить encounteredIn еды #' + foodId, err))
+              );
+            }
+          }
+        });
+      }
+      
+      // Для уровней: обновляем locations у объектов
+      if (type === 'levels' && newObj.itemIds && Array.isArray(newObj.itemIds)) {
+        newObj.itemIds.forEach(itemId => {
+          const item = byId('items', itemId);
+          if (item) {
+            const locations = Array.isArray(item.locations) ? item.locations : (item.locations ? splitIds(item.locations) : []);
+            if (!locations.some(id => sameId(id, newObj.id))) {
+              locations.push(newObj.id);
+              const updatedItem = { ...item, locations };
+              backlinkPromises.push(
+                GH.commit(`items/items_${itemId}.json`, updatedItem, item._sha)
+                  .then(sha => { item._sha = sha; })
+                  .catch(err => console.warn('Не удалось обновить locations объекта #' + itemId, err))
+              );
+            }
+          }
+        });
+      }
+      
+      // Выполняем все backlink коммиты асинхронно
+      if (backlinkPromises.length > 0) {
+        toast(`Синхронизация связей: 0/${backlinkPromises.length}...`);
+        await Promise.allSettled(backlinkPromises);
+        logEvent('backlink', `Обновлены обратные связи для уровня #${newObj.id}`);
+      }
+      
       await GH.commit(`${type}/${type}_${newObj.id}.json`,newObj,obj?._sha);
       ensureDefaults(newObj,type);
       if(obj){
