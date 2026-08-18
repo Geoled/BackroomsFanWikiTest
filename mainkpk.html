@@ -1507,7 +1507,9 @@ function renderGraph(){
   const nodeEls=nodes.map(n=>{
     const gg=document.createElementNS(NS,'g'); gg.classList.add('map-node');
     if(sameId(n.id,state.currentLevelId)) gg.classList.add('current');
-    const hasThumb=n.obj.thumbnail && !n.obj.status?.includes('encrypted');
+    // Используем thumbnail или первую картинку из images если thumbnail пустой
+    const coverImage = n.obj.thumbnail || (n.obj.images && n.obj.images.length > 0 && n.obj.images[0].url ? n.obj.images[0].url : null);
+    const hasThumb=coverImage && !n.obj.status?.includes('encrypted');
     const r=hasThumb?18:(sameId(n.id,state.currentLevelId)?11:7);
     const c=document.createElementNS(NS,'circle');
     c.setAttribute('r',r);
@@ -1523,7 +1525,7 @@ function renderGraph(){
       defs.appendChild(clipPath);
       
       const img=document.createElementNS(NS,'image');
-      img.setAttributeNS('http://www.w3.org/1999/xlink','href',n.obj.thumbnail);
+      img.setAttributeNS('http://www.w3.org/1999/xlink','href',coverImage);
       img.setAttribute('x',-r); img.setAttribute('y',-r); img.setAttribute('width',r*2); img.setAttribute('height',r*2);
       img.setAttribute('clip-path','url(#clip-'+n.id+')');
       img.setAttribute('preserveAspectRatio','xMidYMid slice');
